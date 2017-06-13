@@ -5,30 +5,31 @@ var sassJs = require('sass.js'),
     qFs = require('q-io/fs'),
     _ = require('lodash'),
     path = require('path'),
-    
+
     getNodeModuleDir = require('./lib/get-node-module-dir'),
     getResolvedPath = require('./lib/get-resolved-path'),
     getPathVariations = require('./lib/get-path-variations');
 
 module.exports = function(content) {
     var callback = this.async();
+    var addDependency = this.addDependency;
 
     sassJs.importer(function(request, done) {
         // Adapted from
-        // eslint-disable-next-line max-len 
+        // eslint-disable-next-line max-len
         // https://github.com/amiramw/grunt-contrib-sassjs/blob/a65f869df967a4e417c4260fd93239e4f0bc55ee/tasks/sass.js#L11
 		if (request.path) {
 			done();
 		} else if (request.resolved) {
 			var resolvedPath = getResolvedPath(request),
                 pathVariations = getPathVariations(resolvedPath),
-            
+                
                 ostensibleNodeModuleName = _.first(request.current.split(path.sep)),
                 rootNodeModulesDir = getRootNodeModulesDir(ostensibleNodeModuleName);
 
             if (rootNodeModulesDir) {
                 Array.prototype.push.apply(
-                    pathVariations, 
+                    pathVariations,
                     getPathVariations(path.join(rootNodeModulesDir, request.current))
                 );
             }
@@ -53,7 +54,7 @@ module.exports = function(content) {
                             return null;
                         }
                         throw err;
-                    });    
+                    });
             })).then(function(files) {
                 done(_(files).compact().first());
             }).catch(function(err) {
@@ -65,6 +66,11 @@ module.exports = function(content) {
     });
 
     sassJs.compile(content, {inputPath: this.resourcePath}, function(result) {
+        if (result.files) {
+            result.files.map(function(file) {
+                addDependency(file);
+            });
+        }
         if (!result.status) {
             callback(null, result.text);
         } else {
