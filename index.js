@@ -18,12 +18,12 @@ module.exports = function(content) {
         // Adapted from
         // eslint-disable-next-line max-len
         // https://github.com/amiramw/grunt-contrib-sassjs/blob/a65f869df967a4e417c4260fd93239e4f0bc55ee/tasks/sass.js#L11
-		if (request.path) {
-			done();
-		} else if (request.resolved) {
-			var resolvedPath = getResolvedPath(request),
+        if (request.path) {
+            done();
+        } else if (request.resolved) {
+            var resolvedPath = getResolvedPath(request),
                 pathVariations = getPathVariations(resolvedPath),
-                
+
                 ostensibleNodeModuleName = _.first(request.current.split(path.sep)),
                 rootNodeModulesDir = getRootNodeModulesDir(ostensibleNodeModuleName);
 
@@ -60,9 +60,9 @@ module.exports = function(content) {
             }).catch(function(err) {
                 done({error: JSON.stringify(err)});
             });
-		} else {
-			done();
-		}
+        } else {
+            done();
+        }
     });
 
     sassJs.compile(content, {inputPath: this.resourcePath}, function(result) {
