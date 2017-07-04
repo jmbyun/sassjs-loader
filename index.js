@@ -66,15 +66,20 @@ module.exports = function(content) {
     });
 
     sassJs.compile(content, {inputPath: this.resourcePath}, function(result) {
-        if (result.files) {
-            result.files.map(function(file) {
-                addDependency(file);
-            });
-        }
-        if (!result.status) {
+        if (result.status === 0) {
+            if (result.files) {
+                result.files.map(function (filePath) {
+                    addDependency(filePath);
+                });
+            }
             callback(null, result.text);
         } else {
-            callback(result);
+            let message = result.formatted || result.message;
+            if (result.file) {
+                addDependency(result.file);
+                message += '\nChange content of "' + result.file + '" to trigger re-compile.'
+            }
+            callback(new Error(message));
         }
     });
 };
